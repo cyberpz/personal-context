@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
 <title>Personal Context</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -20,10 +20,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .progress-label{font-size:0.7rem;color:var(--muted);white-space:nowrap;}
 
 /* MAIN */
-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem;}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:2rem 1rem;overflow-y:auto;}
 
 /* SCREENS */
-.screen{display:none;width:100%;max-width:600px;}
+.screen{display:none;width:100%;max-width:600px;margin:auto;}
 .screen.active{display:flex;flex-direction:column;gap:1.5rem;animation:fadeIn 0.3s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
@@ -269,14 +269,14 @@ function renderQuestion(idx){
     inp.type='text'; inp.placeholder=q.placeholder||''; inp.value=saved||'';
     inp.addEventListener('keydown',e=>{ if(e.key==='Enter') goNext(); });
     container.appendChild(inp);
-    setTimeout(()=>inp.focus(),50);
+    setTimeout(()=>{ inp.focus(); inp.scrollIntoView({behavior:'smooth',block:'center'}); },100);
   }
   else if(q.type==='textarea'){
     const ta = document.createElement('textarea');
     ta.placeholder=q.placeholder||''; ta.value=saved||'';
     ta.addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)) goNext(); });
     container.appendChild(ta);
-    setTimeout(()=>ta.focus(),50);
+    setTimeout(()=>{ ta.focus(); ta.scrollIntoView({behavior:'smooth',block:'center'}); },100);
   }
   else if(q.type==='choice'){
     const wrap = document.createElement('div');
