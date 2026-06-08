@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personal Context</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f1a;--surface:#111827;--border:#1e293b;--text:#e2e8f0;--muted:#64748b;
+  --accent:#6366f1;--accent2:#818cf8;--green:#34d399;--red:#f87171;--yellow:#fbbf24;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;gap:1rem;padding:1rem 2rem;border-bottom:1px solid var(--border);background:rgba(17,24,39,0.8);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10;}
+.logo{font-size:0.75rem;font-weight:700;letter-spacing:0.15em;color:var(--accent2);text-transform:uppercase;}
+.progress-wrap{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width 0.4s ease;}
+.progress-label{font-size:0.7rem;color:var(--muted);white-space:nowrap;}
+
+/* MAIN */
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem;}
+
+/* SCREENS */
+.screen{display:none;width:100%;max-width:600px;}
+.screen.active{display:flex;flex-direction:column;gap:1.5rem;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* WELCOME */
+.welcome-icon{font-size:3rem;text-align:center;}
+.welcome h1{font-size:1.75rem;font-weight:700;text-align:center;line-height:1.3;}
+.welcome p{color:var(--muted);text-align:center;line-height:1.6;font-size:0.95rem;}
+.category-chips{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;}
+.chip{font-size:0.7rem;padding:0.25rem 0.75rem;border-radius:999px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);color:var(--accent2);}
+
+/* QUESTION CARD */
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:2rem;display:flex;flex-direction:column;gap:1.25rem;}
+.q-meta{display:flex;align-items:center;gap:0.5rem;}
+.q-category{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent2);font-weight:600;}
+.q-num{font-size:0.65rem;color:var(--muted);}
+.q-text{font-size:1.1rem;font-weight:600;line-height:1.4;}
+.q-hint{font-size:0.8rem;color:var(--muted);line-height:1.5;}
+
+/* INPUTS */
+textarea,input[type=text]{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:0.5rem;color:var(--text);font-size:0.95rem;padding:0.75rem 1rem;resize:vertical;font-family:inherit;transition:border-color 0.2s;}
+textarea{min-height:90px;}
+textarea:focus,input[type=text]:focus{outline:none;border-color:var(--accent);}
+
+/* CHOICE BUTTONS */
+.choices{display:flex;flex-direction:column;gap:0.5rem;}
+.choices.inline{flex-direction:row;flex-wrap:wrap;}
+.choice-btn{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:0.5rem;color:var(--text);font-size:0.875rem;padding:0.625rem 1rem;cursor:pointer;transition:all 0.15s;text-align:left;}
+.choice-btn:hover{border-color:var(--accent);background:rgba(99,102,241,0.08);}
+.choice-btn.selected{border-color:var(--accent);background:rgba(99,102,241,0.15);color:var(--accent2);}
+.choices.inline .choice-btn{flex:1;min-width:120px;text-align:center;}
+
+/* SCALE */
+.scale-wrap{display:flex;flex-direction:column;gap:0.75rem;}
+.scale-btns{display:flex;gap:0.375rem;}
+.scale-btn{flex:1;aspect-ratio:1;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:0.5rem;color:var(--muted);font-size:0.875rem;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;}
+.scale-btn:hover{border-color:var(--accent);}
+.scale-btn.selected{border-color:var(--accent);background:rgba(99,102,241,0.2);color:var(--accent2);font-weight:700;}
+.scale-labels{display:flex;justify-content:space-between;font-size:0.7rem;color:var(--muted);}
+
+/* TAGS INPUT */
+.tags-wrap{display:flex;flex-wrap:wrap;gap:0.375rem;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:0.5rem;padding:0.5rem;min-height:44px;cursor:text;}
+.tags-wrap:focus-within{border-color:var(--accent);}
+.tag{background:rgba(99,102,241,0.2);border:1px solid rgba(99,102,241,0.4);color:var(--accent2);border-radius:0.25rem;font-size:0.8rem;padding:0.125rem 0.5rem;display:flex;align-items:center;gap:0.25rem;}
+.tag-remove{cursor:pointer;color:var(--muted);font-size:0.9rem;line-height:1;}
+.tag-remove:hover{color:var(--red);}
+.tags-input{background:none;border:none;outline:none;color:var(--text);font-size:0.875rem;min-width:120px;flex:1;}
+
+/* ACTIONS */
+.actions{display:flex;gap:0.75rem;align-items:center;}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:0.5rem;padding:0.75rem 1.75rem;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.btn-primary:hover{background:var(--accent2);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-skip{background:none;border:none;color:var(--muted);font-size:0.85rem;cursor:pointer;padding:0.5rem;}
+.btn-skip:hover{color:var(--text);}
+.btn-back{background:none;border:1px solid var(--border);color:var(--muted);border-radius:0.5rem;padding:0.625rem 1rem;font-size:0.85rem;cursor:pointer;}
+.btn-back:hover{border-color:var(--accent);color:var(--text);}
+.btn-secondary{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text);border-radius:0.5rem;padding:0.75rem 1.5rem;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all 0.15s;}
+.btn-secondary:hover{border-color:var(--accent);}
+
+/* DONE SCREEN */
+.done-screen{text-align:center;gap:2rem;}
+.done-icon{font-size:4rem;}
+.done-screen h2{font-size:1.5rem;font-weight:700;}
+.done-screen p{color:var(--muted);line-height:1.6;font-size:0.95rem;}
+.export-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+.preview-wrap{background:var(--surface);border:1px solid var(--border);border-radius:0.75rem;padding:1.25rem;text-align:left;}
+.preview-wrap pre{font-size:0.7rem;color:var(--muted);overflow:auto;max-height:200px;white-space:pre-wrap;word-break:break-all;}
+
+/* FOOTER */
+footer{text-align:center;padding:1.5rem;color:var(--muted);font-size:0.7rem;border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="logo">⬡ Personal Context</span>
+  <div class="progress-wrap"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <span class="progress-label" id="progressLabel">0 / 0</span>
+</div>
+
+<main>
+
+<!-- WELCOME -->
+<div class="screen active" id="screen-welcome">
+  <div class="welcome-icon">🧠</div>
+  <div class="welcome">
+    <h1>Build your Personal Context</h1>
+    <p>Answer a set of questions about who you are. The result is a portable JSON file you can feed to any personal AI — no cold start, no repetition.</p>
+  </div>
+  <div class="category-chips">
+    <span class="chip">Identity</span>
+    <span class="chip">Work</span>
+    <span class="chip">Relationships</span>
+    <span class="chip">Routines</span>
+    <span class="chip">Personality</span>
+    <span class="chip">Goals</span>
+    <span class="chip">AI Preferences</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.8rem;text-align:center;">~10 minutes · everything stays local · skip anything sensitive</p>
+  <div style="display:flex;justify-content:center;">
+    <button class="btn-primary" onclick="startQuiz()">Start →</button>
+  </div>
+</div>
+
+<!-- QUESTION -->
+<div class="screen" id="screen-question">
+  <div class="q-card">
+    <div class="q-meta">
+      <span class="q-category" id="qCategory"></span>
+      <span class="q-num" id="qNum"></span>
+    </div>
+    <div class="q-text" id="qText"></div>
+    <div class="q-hint" id="qHint" style="display:none"></div>
+    <div id="qInput"></div>
+  </div>
+  <div class="actions">
+    <button class="btn-back" id="btnBack" onclick="goBack()">← Back</button>
+    <button class="btn-primary" id="btnNext" onclick="goNext()">Next →</button>
+    <button class="btn-skip" onclick="skipQuestion()">Skip</button>
+  </div>
+</div>
+
+<!-- DONE -->
+<div class="screen" id="screen-done">
+  <div class="done-screen">
+    <div class="done-icon">✅</div>
+    <h2>Your Personal Context is ready</h2>
+    <p>This file gives any personal AI a head start. Import it once — no more repeating yourself.</p>
+    <div class="export-actions">
+      <button class="btn-primary" onclick="exportJSON()">↓ Download JSON</button>
+      <button class="btn-secondary" onclick="exportMarkdown()">↓ Download Markdown</button>
+    </div>
+    <div class="preview-wrap">
+      <pre id="jsonPreview"></pre>
+    </div>
+    <button class="btn-skip" onclick="restartQuiz()">Start over</button>
+  </div>
+</div>
+
+</main>
+
+<footer>Personal Context v1.0 · runs entirely in your browser · no data sent anywhere</footer>
+
+<script>
+const QUESTIONS = [
+  // IDENTITY
+  { id:'name', cat:'Identity', text:'What should your AI call you?', hint:'First name, nickname, or whatever feels natural.', type:'text', placeholder:'e.g. Marco' },
+  { id:'age_range', cat:'Identity', text:'Your age range?', type:'choice', choices:['Under 25','25–34','35–44','45–54','55+'], inline:true },
+  { id:'location', cat:'Identity', text:'Where are you based?', hint:'City and country.', type:'text', placeholder:'e.g. Granada, Spain' },
+  { id:'languages', cat:'Identity', text:'Languages you speak (and prefer to use with AI)?', type:'tags', placeholder:'Add language…' },
+  { id:'self_description', cat:'Identity', text:'Describe yourself in 3 words.', hint:'First things that come to mind.', type:'text', placeholder:'e.g. curious, direct, restless' },
+  { id:'role', cat:'Identity', text:'What's your professional role or title?', type:'text', placeholder:'e.g. Software engineer, Founder, Designer' },
+
+  // WORK
+  { id:'daily_work', cat:'Work', text:'What do you actually do day to day?', hint:'Not the title — the real activities.', type:'textarea', placeholder:'e.g. I write code, review PRs, do customer calls, manage a small team…' },
+  { id:'current_projects', cat:'Work', text:'What are your main projects right now?', type:'tags', placeholder:'Add project…' },
+  { id:'tools', cat:'Work', text:'Tools and technologies you use most?', type:'tags', placeholder:'Add tool…' },
+  { id:'work_style', cat:'Work', text:'How do you work best?', type:'choice', choices:['Deep focus blocks','Constant switching','Mix of both'], inline:true },
+  { id:'work_location', cat:'Work', text:'Where do you work?', type:'choice', choices:['Fully remote','Hybrid','In office'], inline:true },
+  { id:'pro_goal', cat:'Work', text:'Your biggest professional goal right now?', type:'textarea', placeholder:'What are you trying to achieve in the next 6–12 months?' },
+  { id:'work_frustrations', cat:'Work', text:'What frustrates you most about your work?', hint:'Be honest — this helps your AI anticipate pain points.', type:'textarea', placeholder:'e.g. Too many meetings, unclear priorities, context switching…' },
+
+  // RELATIONSHIPS
+  { id:'important_people', cat:'Relationships', text:'Who are the most important people in your life?', hint:'Names and relationship — your AI can reference them.', type:'textarea', placeholder:'e.g. Sara (partner), Luca (brother), Miguel (closest friend)…' },
+  { id:'household', cat:'Relationships', text:'Who do you live with?', type:'choice', choices:['Alone','Partner','Partner + kids','Roommates','Family'], inline:true },
+  { id:'comm_preference', cat:'Relationships', text:'How do you prefer to communicate?', type:'multichoice', choices:['Text/chat','Voice calls','Email','In person','Video calls'] },
+  { id:'collab', cat:'Relationships', text:'Who do you collaborate with professionally?', type:'textarea', placeholder:'e.g. small team of 3 devs, freelance clients, solo…' },
+
+  // ROUTINES
+  { id:'morning', cat:'Routines', text:'Describe your typical morning.', hint:'From wake-up to starting work.', type:'textarea', placeholder:'e.g. Wake at 7, coffee, 30min walk, email before 9…' },
+  { id:'productive_time', cat:'Routines', text:'When are you most productive?', type:'choice', choices:['Early morning (5–9)','Morning (9–12)','Afternoon (12–17)','Evening (17–21)','Night (21+)'], inline:false },
+  { id:'sleep', cat:'Routines', text:'Sleep schedule?', type:'text', placeholder:'e.g. 11pm–7am, usually 7h' },
+  { id:'exercise', cat:'Routines', text:'Exercise habits?', type:'text', placeholder:'e.g. Run 3x/week, gym daily, mostly sedentary' },
+  { id:'decompress', cat:'Routines', text:'How do you decompress after a hard day?', type:'textarea', placeholder:'e.g. Walk, cooking, gaming, reading, music…' },
+  { id:'recurring_commitments', cat:'Routines', text:'Any recurring weekly commitments your AI should know about?', type:'textarea', placeholder:'e.g. Weekly team standup Mon 9am, therapy Thursdays, gym MWF…' },
+
+  // PERSONALITY
+  { id:'introvert_extrovert', cat:'Personality', text:'Introvert or extrovert?', type:'scale', lo:'Strongly introvert', hi:'Strongly extrovert' },
+  { id:'decision_style', cat:'Personality', text:'How do you make decisions?', type:'choice', choices:['Gut / fast intuition','Slow analysis','Data first, then gut'], inline:true },
+  { id:'risk_appetite', cat:'Personality', text:'Risk appetite?', type:'scale', lo:'Very risk-averse', hi:'High risk tolerance' },
+  { id:'interests', cat:'Personality', text:'Topics that genuinely fascinate you?', type:'tags', placeholder:'Add topic…' },
+  { id:'dislikes', cat:'Personality', text:'Things you actively dislike or want your AI to avoid?', hint:'Subjects, tones, behaviors.', type:'textarea', placeholder:'e.g. Small talk, over-explaining, unsolicited advice, negativity…' },
+  { id:'strengths', cat:'Personality', text:'What are you genuinely good at?', type:'tags', placeholder:'Add strength…' },
+  { id:'blind_spots', cat:'Personality', text:'Any known blind spots or weaknesses you want your AI to watch for?', type:'textarea', placeholder:'e.g. I tend to over-engineer, procrastinate on admin, avoid conflict…' },
+
+  // GOALS
+  { id:'top_goals', cat:'Goals', text:'Your top 3 goals right now — life, not just work.', type:'textarea', placeholder:'e.g. 1. Launch Muffin v1\n2. Get healthier\n3. Spend more time with family' },
+  { id:'success_definition', cat:'Goals', text:'What does success look like for you in 3 years?', type:'textarea', placeholder:'Paint the picture — specific if possible.' },
+  { id:'fears', cat:'Goals', text:'What are you most afraid of?', hint:'Optional but useful — helps your AI understand what to avoid and what to support.', type:'textarea', placeholder:'e.g. Stagnation, financial insecurity, losing people close to me…' },
+  { id:'non_negotiables', cat:'Goals', text:'Your non-negotiables — things you refuse to compromise on?', type:'tags', placeholder:'Add non-negotiable…' },
+  { id:'values', cat:'Goals', text:'Core values that drive your decisions?', type:'tags', placeholder:'Add value…' },
+
+  // AI PREFERENCES
+  { id:'ai_tone', cat:'AI Preferences', text:'How should your AI talk to you?', type:'choice', choices:['Very direct, no fluff','Warm but efficient','Formal and precise','Casual and friendly'], inline:false },
+  { id:'ai_directness', cat:'AI Preferences', text:'When you're wrong, should your AI tell you?', type:'choice', choices:['Always — I want the truth','Yes, but diplomatically','Only if I ask','No — just help me execute'], inline:false },
+  { id:'ai_proactivity', cat:'AI Preferences', text:'How proactive should your AI be?', type:'scale', lo:'Only answers what I ask', hi:'Proactively suggests and flags things' },
+  { id:'ai_humor', cat:'AI Preferences', text:'Humor in AI responses?', type:'choice', choices:['Yes, dark/dry humor','Light humor OK','Professional only','No humor'], inline:true },
+  { id:'ai_language', cat:'AI Preferences', text:'Preferred language for AI responses?', type:'choice', choices:['Same as I write','Always English','Always Italian','Always Spanish','Always French'], inline:false },
+  { id:'ai_memory_scope', cat:'AI Preferences', text:'What should your AI always remember vs forget?', hint:'Categories of info you want surfaced vs never referenced.', type:'textarea', placeholder:'e.g. Always remember my projects and goals. Never mention my health history in work contexts.' },
+  { id:'privacy_level', cat:'AI Preferences', text:'Privacy comfort level?', type:'scale', lo:'Very private — minimal personal info used', hi:'Open — use everything to help me better' },
+  { id:'extra', cat:'AI Preferences', text:'Anything else your AI should know about you that wasn't covered?', type:'textarea', placeholder:'Free field — anything goes.' },
+];
+
+let current = 0;
+let answers = {};
+
+function startQuiz(){
+  showScreen('screen-question');
+  renderQuestion(0);
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateProgress(){
+  const pct = QUESTIONS.length ? Math.round((current / QUESTIONS.length)*100) : 0;
+  document.getElementById('progressFill').style.width = pct+'%';
+  document.getElementById('progressLabel').textContent = current+' / '+QUESTIONS.length;
+}
+
+function renderQuestion(idx){
+  current = idx;
+  updateProgress();
+  const q = QUESTIONS[idx];
+  document.getElementById('qCategory').textContent = q.cat;
+  document.getElementById('qNum').textContent = (idx+1)+' of '+QUESTIONS.length;
+  document.getElementById('qText').textContent = q.text;
+  const hintEl = document.getElementById('qHint');
+  if(q.hint){ hintEl.textContent=q.hint; hintEl.style.display='block'; }
+  else{ hintEl.style.display='none'; }
+
+  document.getElementById('btnBack').style.visibility = idx===0 ? 'hidden' : 'visible';
+  document.getElementById('btnNext').textContent = idx===QUESTIONS.length-1 ? 'Finish ✓' : 'Next →';
+
+  const container = document.getElementById('qInput');
+  container.innerHTML='';
+  const saved = answers[q.id];
+
+  if(q.type==='text'){
+    const inp = document.createElement('input');
+    inp.type='text'; inp.placeholder=q.placeholder||''; inp.value=saved||'';
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') goNext(); });
+    container.appendChild(inp);
+    setTimeout(()=>inp.focus(),50);
+  }
+  else if(q.type==='textarea'){
+    const ta = document.createElement('textarea');
+    ta.placeholder=q.placeholder||''; ta.value=saved||'';
+    ta.addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)) goNext(); });
+    container.appendChild(ta);
+    setTimeout(()=>ta.focus(),50);
+  }
+  else if(q.type==='choice'){
+    const wrap = document.createElement('div');
+    wrap.className='choices'+(q.inline?' inline':'');
+    q.choices.forEach(c=>{
+      const btn=document.createElement('button');
+      btn.className='choice-btn'+(saved===c?' selected':'');
+      btn.textContent=c;
+      btn.onclick=()=>{ wrap.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); answers[q.id]=c; };
+      wrap.appendChild(btn);
+    });
+    container.appendChild(wrap);
+  }
+  else if(q.type==='multichoice'){
+    const wrap = document.createElement('div');
+    wrap.className='choices';
+    const sel = saved ? new Set(saved) : new Set();
+    q.choices.forEach(c=>{
+      const btn=document.createElement('button');
+      btn.className='choice-btn'+(sel.has(c)?' selected':'');
+      btn.textContent=c;
+      btn.onclick=()=>{ btn.classList.toggle('selected'); if(sel.has(c)) sel.delete(c); else sel.add(c); answers[q.id]=Array.from(sel); };
+      wrap.appendChild(btn);
+    });
+    container.appendChild(wrap);
+  }
+  else if(q.type==='scale'){
+    const wrap = document.createElement('div'); wrap.className='scale-wrap';
+    const btns = document.createElement('div'); btns.className='scale-btns';
+    const labels = document.createElement('div'); labels.className='scale-labels';
+    labels.innerHTML=`<span>${q.lo}</span><span>${q.hi}</span>`;
+    for(let i=1;i<=5;i++){
+      const btn=document.createElement('button');
+      btn.className='scale-btn'+(saved===i?' selected':'');
+      btn.textContent=i;
+      btn.onclick=()=>{ btns.querySelectorAll('.scale-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); answers[q.id]=i; };
+      btns.appendChild(btn);
+    }
+    wrap.appendChild(btns); wrap.appendChild(labels);
+    container.appendChild(wrap);
+  }
+  else if(q.type==='tags'){
+    const savedTags = saved || [];
+    const tags = [...savedTags];
+    const wrap = document.createElement('div'); wrap.className='tags-wrap';
+    const inp = document.createElement('input'); inp.type='text'; inp.className='tags-input'; inp.placeholder=q.placeholder||'Type and press Enter…';
+
+    function renderTags(){
+      wrap.querySelectorAll('.tag').forEach(t=>t.remove());
+      tags.forEach((tag,i)=>{
+        const el=document.createElement('span'); el.className='tag';
+        el.innerHTML=tag+' <span class="tag-remove" data-i="'+i+'">×</span>';
+        el.querySelector('.tag-remove').onclick=(e)=>{ e.stopPropagation(); tags.splice(i,1); answers[q.id]=[...tags]; renderTags(); };
+        wrap.insertBefore(el,inp);
+      });
+    }
+    inp.addEventListener('keydown',e=>{
+      if((e.key==='Enter'||e.key===',')&&inp.value.trim()){
+        e.preventDefault(); const v=inp.value.trim().replace(/,$/,'');
+        if(v&&!tags.includes(v)){ tags.push(v); answers[q.id]=[...tags]; renderTags(); inp.value=''; }
+      } else if(e.key==='Backspace'&&!inp.value&&tags.length){
+        tags.pop(); answers[q.id]=[...tags]; renderTags();
+      }
+    });
+    wrap.onclick=()=>inp.focus();
+    wrap.appendChild(inp);
+    renderTags();
+    container.appendChild(wrap);
+    setTimeout(()=>inp.focus(),50);
+  }
+}
+
+function getCurrentValue(){
+  const q = QUESTIONS[current];
+  if(q.type==='text') return document.querySelector('#qInput input')?.value.trim()||null;
+  if(q.type==='textarea') return document.querySelector('#qInput textarea')?.value.trim()||null;
+  if(q.type==='choice'||q.type==='scale'||q.type==='multichoice') return answers[q.id]||null;
+  if(q.type==='tags') return answers[q.id]?.length ? answers[q.id] : null;
+  return null;
+}
+
+function saveCurrentAndProceed(skip=false){
+  const q = QUESTIONS[current];
+  if(!skip){
+    const val = getCurrentValue();
+    if(val !== null) answers[q.id] = val;
+  }
+}
+
+function goNext(){
+  saveCurrentAndProceed(false);
+  if(current < QUESTIONS.length-1){
+    renderQuestion(current+1);
+  } else {
+    finishQuiz();
+  }
+}
+
+function goBack(){
+  saveCurrentAndProceed(false);
+  if(current > 0) renderQuestion(current-1);
+}
+
+function skipQuestion(){
+  if(current < QUESTIONS.length-1) renderQuestion(current+1);
+  else finishQuiz();
+}
+
+function finishQuiz(){
+  current = QUESTIONS.length;
+  updateProgress();
+  const json = buildJSON();
+  document.getElementById('jsonPreview').textContent = JSON.stringify(json, null, 2).slice(0,800)+'…';
+  showScreen('screen-done');
+}
+
+function buildJSON(){
+  const get = id => answers[id] || null;
+  return {
+    version: "1.0",
+    generated: new Date().toISOString(),
+    identity: {
+      name: get('name'),
+      age_range: get('age_range'),
+      location: get('location'),
+      languages: get('languages'),
+      self_description: get('self_description'),
+      role: get('role'),
+    },
+    work: {
+      daily_activities: get('daily_work'),
+      current_projects: get('current_projects'),
+      tools: get('tools'),
+      work_style: get('work_style'),
+      work_location: get('work_location'),
+      professional_goal: get('pro_goal'),
+      frustrations: get('work_frustrations'),
+    },
+    relationships: {
+      important_people: get('important_people'),
+      household: get('household'),
+      communication_preference: get('comm_preference'),
+      professional_collaborators: get('collab'),
+    },
+    routines: {
+      morning: get('morning'),
+      peak_productivity: get('productive_time'),
+      sleep_schedule: get('sleep'),
+      exercise: get('exercise'),
+      decompression: get('decompress'),
+      recurring_commitments: get('recurring_commitments'),
+    },
+    personality: {
+      introvert_extrovert_scale: get('introvert_extrovert'),
+      decision_style: get('decision_style'),
+      risk_appetite_scale: get('risk_appetite'),
+      interests: get('interests'),
+      dislikes: get('dislikes'),
+      strengths: get('strengths'),
+      blind_spots: get('blind_spots'),
+    },
+    goals: {
+      top_goals: get('top_goals'),
+      success_in_3_years: get('success_definition'),
+      fears: get('fears'),
+      non_negotiables: get('non_negotiables'),
+      core_values: get('values'),
+    },
+    ai_preferences: {
+      tone: get('ai_tone'),
+      directness: get('ai_directness'),
+      proactivity_scale: get('ai_proactivity'),
+      humor: get('ai_humor'),
+      preferred_language: get('ai_language'),
+      memory_scope: get('ai_memory_scope'),
+      privacy_level_scale: get('ai_privacy_level'),
+      extra_context: get('extra'),
+    },
+  };
+}
+
+function exportJSON(){
+  const data = JSON.stringify(buildJSON(), null, 2);
+  const name = answers['name'] ? answers['name'].toLowerCase().replace(/\s+/g,'_') : 'personal';
+  download(data, name+'_context.json', 'application/json');
+}
+
+function exportMarkdown(){
+  const j = buildJSON();
+  const name = j.identity.name || 'Unknown';
+  let md = `# Personal Context — ${name}\n_Generated ${new Date().toLocaleDateString()}_\n\n`;
+
+  const section = (title, obj) => {
+    const lines = Object.entries(obj).filter(([,v])=>v!==null&&v!==undefined).map(([k,v])=>{
+      const label = k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      const val = Array.isArray(v) ? v.join(', ') : v;
+      return `- **${label}:** ${val}`;
+    });
+    if(lines.length) md += `## ${title}\n${lines.join('\n')}\n\n`;
+  };
+
+  section('Identity', j.identity);
+  section('Work', j.work);
+  section('Relationships', j.relationships);
+  section('Routines', j.routines);
+  section('Personality', j.personality);
+  section('Goals', j.goals);
+  section('AI Preferences', j.ai_preferences);
+
+  const name2 = (answers['name']||'personal').toLowerCase().replace(/\s+/g,'_');
+  download(md, name2+'_context.md', 'text/markdown');
+}
+
+function download(content, filename, mime){
+  const blob = new Blob([content],{type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function restartQuiz(){
+  answers={};
+  current=0;
+  updateProgress();
+  startQuiz();
+}
+
+updateProgress();
+</script>
+</body>
+</html>
