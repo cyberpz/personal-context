@@ -218,13 +218,13 @@ const QUESTIONS = [
 
   // AI PREFERENCES
   { id:'ai_tone', cat:'AI Preferences', text:'How should your AI talk to you?', type:'choice', choices:['Very direct, no fluff','Warm but efficient','Formal and precise','Casual and friendly'], inline:false },
-  { id:'ai_directness', cat:'AI Preferences', text:'When you're wrong, should your AI tell you?', type:'choice', choices:['Always — I want the truth','Yes, but diplomatically','Only if I ask','No — just help me execute'], inline:false },
+  { id:'ai_directness', cat:'AI Preferences', text:"When you're wrong, should your AI tell you?", type:'choice', choices:['Always — I want the truth','Yes, but diplomatically','Only if I ask','No — just help me execute'], inline:false },
   { id:'ai_proactivity', cat:'AI Preferences', text:'How proactive should your AI be?', type:'scale', lo:'Only answers what I ask', hi:'Proactively suggests and flags things' },
   { id:'ai_humor', cat:'AI Preferences', text:'Humor in AI responses?', type:'choice', choices:['Yes, dark/dry humor','Light humor OK','Professional only','No humor'], inline:true },
   { id:'ai_language', cat:'AI Preferences', text:'Preferred language for AI responses?', type:'choice', choices:['Same as I write','Always English','Always Italian','Always Spanish','Always French'], inline:false },
   { id:'ai_memory_scope', cat:'AI Preferences', text:'What should your AI always remember vs forget?', hint:'Categories of info you want surfaced vs never referenced.', type:'textarea', placeholder:'e.g. Always remember my projects and goals. Never mention my health history in work contexts.' },
   { id:'privacy_level', cat:'AI Preferences', text:'Privacy comfort level?', type:'scale', lo:'Very private — minimal personal info used', hi:'Open — use everything to help me better' },
-  { id:'extra', cat:'AI Preferences', text:'Anything else your AI should know about you that wasn't covered?', type:'textarea', placeholder:'Free field — anything goes.' },
+  { id:'extra', cat:'AI Preferences', text:"Anything else your AI should know about you that wasn't covered?", type:'textarea', placeholder:'Free field — anything goes.' },
 ];
 
 let current = 0;
